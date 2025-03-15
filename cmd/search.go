@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/sakshamgupta05/cmdvault/internal/config"
 	"github.com/sakshamgupta05/cmdvault/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -16,15 +15,6 @@ var searchCmd = &cobra.Command{
 			searchTerm = args[0]
 		}
 
-		collection := collectionFlag
-		if collection == "" {
-			collection = config.GetDefaultCollection()
-		}
-
 		ui.InteractiveSearch(searchTerm)
 	},
-}
-
-func init() {
-	searchCmd.Flags().StringVarP(&collectionFlag, "collection", "c", "", "Collection to search in")
 }

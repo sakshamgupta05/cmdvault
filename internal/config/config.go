@@ -10,15 +10,14 @@ import (
 
 // Config holds application configuration
 type Config struct {
-	DefaultCollection string   `yaml:"defaultCollection"`
-	Collections       []string `yaml:"collections"`
+	CollectionDirs []string `yaml:"collectionDirs"`
 }
 
 var (
-	configDir     string
-	commandsDir   string
-	configFile    string
-	currentConfig Config
+	configDir      string
+	collectionDirs []string
+	configFile     string
+	currentConfig  Config
 )
 
 // InitConfig initializes the configuration
@@ -37,20 +36,14 @@ func InitConfig() {
 		configDir = filepath.Join(homeDir, ".config", "cmdvault")
 	}
 
-	commandsDir = filepath.Join(configDir, "commands")
 	configFile = filepath.Join(configDir, "config.yaml")
 
 	// Create directories if they don't exist
 	os.MkdirAll(configDir, 0755)
-	os.MkdirAll(commandsDir, 0755)
 
 	// Load or create default config
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		currentConfig = Config{
-			DefaultCollection: "default",
-			Collections:       []string{"default"},
-		}
-		SaveConfig()
+		currentConfig = Config{}
 	} else {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
@@ -64,8 +57,15 @@ func InitConfig() {
 		}
 	}
 
-	// Ensure default collection directory exists
-	os.MkdirAll(filepath.Join(commandsDir, currentConfig.DefaultCollection), 0755)
+	collectionDirs = currentConfig.CollectionDirs
+	if len(collectionDirs) == 0 {
+		collectionDirs = []string{filepath.Join(configDir, "collections")}
+	}
+
+	// Create collection directories if they don't exist
+	for _, dir := range collectionDirs {
+		os.MkdirAll(dir, 0755)
+	}
 }
 
 // GetConfig returns the current configuration
@@ -73,43 +73,20 @@ func GetConfig() Config {
 	return currentConfig
 }
 
-// SaveConfig saves the current configuration
-func SaveConfig() error {
-	data, err := yaml.Marshal(currentConfig)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(configFile, data, 0644)
-}
+// GetCollectionPath returns the path to a collection file
+func GetCollectionPath(collection string) (string, error) {
+	collection = collection + ".yaml"
+	// Traverse collection paths in reverse order
+	for i := len(collectionDirs) - 1; i >= 0; i-- {
+		dir := collectionDirs[i]
+		filePath := filepath.Join(dir, collection)
 
-// GetDefaultCollection returns the default collection
-func GetDefaultCollection() string {
-	return currentConfig.DefaultCollection
-}
-
-// SetDefaultCollection sets the default collection
-func SetDefaultCollection(collection string) error {
-	currentConfig.DefaultCollection = collection
-	return SaveConfig()
-}
-
-// AddCollection adds a new collection
-func AddCollection(collection string) error {
-	// Check if collection already exists
-	for _, c := range currentConfig.Collections {
-		if c == collection {
-			return nil
+		if _, err := os.Stat(filePath); err == nil {
+			return filePath, nil
 		}
 	}
 
-	currentConfig.Collections = append(currentConfig.Collections, collection)
-	os.MkdirAll(filepath.Join(commandsDir, collection), 0755)
-	return SaveConfig()
-}
-
-// GetCollectionPath returns the path to a collection directory
-func GetCollectionPath(collection string) string {
-	return filepath.Join(commandsDir, collection)
+	return "", fmt.Errorf("collection %s not found in any configured paths", collection)
 }
 
 // GetConfigDir returns the config directory
@@ -117,7 +94,7 @@ func GetConfigDir() string {
 	return configDir
 }
 
-// GetCommandsDir returns the commands directory
-func GetCommandsDir() string {
-	return commandsDir
+// GetCollectionDirs returns the list of collection directories
+func GetCollectionDirs() []string {
+	return collectionDirs
 }

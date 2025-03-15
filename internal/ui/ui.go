@@ -9,7 +9,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
-	"github.com/sakshamgupta05/cmdvault/internal/config"
 	"github.com/sakshamgupta05/cmdvault/internal/store"
 )
 
@@ -19,73 +18,6 @@ var (
 	cyan   = color.New(color.FgCyan).SprintFunc()
 	bold   = color.New(color.Bold).SprintFunc()
 )
-
-// AddCommandPrompt prompts the user to add a new command
-func AddCommandPrompt(collection string) {
-	// var cmd store.Command
-
-	// questions := []*survey.Question{
-	// 	{
-	// 		Name: "name",
-	// 		Prompt: &survey.Input{
-	// 			Message: "Command name:",
-	// 		},
-	// 		Validate: survey.Required,
-	// 	},
-	// 	{
-	// 		Name: "description",
-	// 		Prompt: &survey.Input{
-	// 			Message: "Description (optional):",
-	// 		},
-	// 	},
-	// 	{
-	// 		Name: "command",
-	// 		Prompt: &survey.Input{
-	// 			Message: "Command:",
-	// 		},
-	// 		Validate: survey.Required,
-	// 	},
-	// 	{
-	// 		Name: "tags",
-	// 		Prompt: &survey.Input{
-	// 			Message: "Tags (comma separated, optional):",
-	// 		},
-	// 	},
-	// }
-	cmd := store.Command{
-		Name:        "name",
-		Description: "description",
-		Command:     "command",
-		Tags:        []string{"tags"},
-	}
-
-	// err := survey.Ask(questions, &cmd)
-	// if err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-	// 	return
-	// }
-
-	// Process tags
-	// if cmd.Tags == nil {
-	cmd.Tags = []string{}
-	// } else if len(cmd.Tags) == 1 {
-	// 	tagString := cmd.Tags[0]
-	// 	cmd.Tags = []string{}
-	// 	for _, tag := range strings.Split(tagString, ",") {
-	// 		tag = strings.TrimSpace(tag)
-	// 		if tag != "" {
-	// 			cmd.Tags = append(cmd.Tags, tag)
-	// 		}
-	// 	}
-	// }
-
-	if err := store.SaveCommand(cmd, collection); err != nil {
-		fmt.Fprintf(os.Stderr, "Error saving command: %v\n", err)
-		return
-	}
-
-	fmt.Printf("%s Command \"%s\" added successfully!\n", green("✓"), cmd.Name)
-}
 
 // ListCommands lists all commands in a collection
 func ListCommands(collection string) {
@@ -113,8 +45,7 @@ func ListCommands(collection string) {
 
 // InteractiveSearch provides an interactive search interface
 func InteractiveSearch(searchTerm string) {
-	collection := config.GetDefaultCollection()
-	commands, err := store.SearchCommands(searchTerm, collection)
+	commands, err := store.SearchCommands(searchTerm)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return

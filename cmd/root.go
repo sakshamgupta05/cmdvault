@@ -28,12 +28,7 @@ func init() {
 	cobra.OnInitialize(config.InitConfig)
 
 	// Add subcommands
-	rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(searchCmd)
 	rootCmd.AddCommand(collectionsCmd)
-	rootCmd.AddCommand(createCollectionCmd)
-	rootCmd.AddCommand(setDefaultCmd)
-	rootCmd.AddCommand(exportCmd)
-	rootCmd.AddCommand(importCmd)
 }
