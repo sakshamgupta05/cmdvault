@@ -35,7 +35,7 @@ func ListCommands(collection string) {
 	fmt.Printf("%s Commands in collection \"%s\":\n\n", bold("•"), collection)
 
 	for _, cmd := range commands {
-		fmt.Printf("%s %s\n   %s\n\n", bold("•"), green(cmd.Name), strings.Join(cmd.Tags, ", "))
+		fmt.Printf("%s %s: %s\n   %s\n\n", bold("•"), cmd.Collection, green(cmd.Name), strings.Join(cmd.Tags, ", "))
 	}
 }
 
@@ -55,7 +55,7 @@ func InteractiveSearch(searchTerm string) {
 	// Prepare options
 	options := make([]string, len(commands))
 	for i, cmd := range commands {
-		options[i] = fmt.Sprintf("%s - %s", cmd.Name, strings.Join(cmd.Tags, ", "))
+		options[i] = fmt.Sprintf("%s: %s - %s", cmd.Collection, cmd.Name, strings.Join(cmd.Tags, ", "))
 	}
 
 	// Prompt for command selection

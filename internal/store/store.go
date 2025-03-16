@@ -11,9 +11,10 @@ import (
 
 // Command represents a stored shell command
 type Command struct {
-	Name    string   `yaml:"name"`
-	Command string   `yaml:"command"`
-	Tags    []string `yaml:"tags"`
+	Collection string
+	Name       string   `yaml:"name"`
+	Command    string   `yaml:"command"`
+	Tags       []string `yaml:"tags"`
 }
 
 type Collection struct {
@@ -77,6 +78,9 @@ func GetCommands(collection string) ([]Command, error) {
 		fmt.Fprintf(os.Stderr, "Error: could not parse file %s: %v\n", collectionPath, err)
 		return nil, err
 	}
+	for i := range collectionStruct.Commands {
+		collectionStruct.Commands[i].Collection = collection
+	}
 
 	return collectionStruct.Commands, nil
 }
@@ -95,7 +99,7 @@ func SearchCommands(searchTerm string) ([]Command, error) {
 	searchTerm = strings.ToLower(searchTerm)
 	var results []Command
 	for _, cmd := range commands {
-		if strings.Contains(strings.ToLower(cmd.Name), searchTerm) {
+		if strings.Contains(strings.ToLower(cmd.Collection)+" "+strings.ToLower(cmd.Name), searchTerm) {
 			results = append(results, cmd)
 			continue
 		}
