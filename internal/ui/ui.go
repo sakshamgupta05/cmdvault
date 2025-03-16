@@ -132,10 +132,15 @@ func formatCommandLong(cmd store.Command) string {
 	if len(cmd.Tags) > 0 {
 		tagsText = fmt.Sprintf("\n   [%s]", strings.Join(cmd.Tags, ", "))
 	}
-	return fmt.Sprintf("%s\n   %s %s%s\n\n%s\n   %s",
+	descriptionText := ""
+	if cmd.Description != "" {
+		descriptionText = fmt.Sprintf("\n   %s", cmd.Description)
+	}
+	return fmt.Sprintf("%s\n   %s %s%s%s\n\n%s\n   %s",
 		bold("Description:"),
 		cmd.Collection,
 		yellow(cmd.Name),
+		descriptionText,
 		tagsText,
 		bold("Command:"),
 		cyan(cmd.Command))

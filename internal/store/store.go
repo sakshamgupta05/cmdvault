@@ -11,10 +11,11 @@ import (
 
 // Command represents a stored shell command
 type Command struct {
-	Collection string
-	Name       string   `yaml:"name"`
-	Command    string   `yaml:"command"`
-	Tags       []string `yaml:"tags"`
+	Collection  string
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Command     string   `yaml:"command"`
+	Tags        []string `yaml:"tags"`
 }
 
 type Collection struct {
