@@ -18,6 +18,7 @@ var (
 	yellow = color.New(color.FgYellow).SprintFunc()
 	cyan   = color.New(color.FgCyan).SprintFunc()
 	bold   = color.New(color.Bold).SprintFunc()
+	red    = color.New(color.FgRed).SprintFunc()
 )
 
 // ListCommands lists all commands in a collection
@@ -104,7 +105,11 @@ func InteractiveSearch(searchTerm string) {
 		if isWindows() {
 			cmd = exec.Command("cmd", "/C", selected.Command)
 		} else {
-			cmd = exec.Command("sh", "-c", selected.Command)
+			shell := os.Getenv("SHELL")
+			if shell == "" {
+				shell = "sh"
+			}
+			cmd = exec.Command(shell, "-c", selected.Command)
 		}
 
 		cmd.Stdout = os.Stdout
@@ -112,7 +117,12 @@ func InteractiveSearch(searchTerm string) {
 		cmd.Stdin = os.Stdin
 
 		if err := cmd.Run(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error executing command: %v\n", err)
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				os.Exit(exitErr.ExitCode())
+			} else {
+				fmt.Fprintf(os.Stderr, "Error executing command: %v\n", red(err))
+				os.Exit(1)
+			}
 		}
 	}
 }
