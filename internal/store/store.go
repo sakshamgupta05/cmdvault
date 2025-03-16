@@ -9,13 +9,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Parameter struct {
+	Name         string `yaml:"name"`
+	Description  string `yaml:"description"`
+	Optional     bool   `yaml:"optional"`
+	DefaultValue string `yaml:"defaultValue"`
+}
+
 // Command represents a stored shell command
 type Command struct {
 	Collection  string
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Command     string   `yaml:"command"`
-	Tags        []string `yaml:"tags"`
+	Name        string      `yaml:"name"`
+	Description string      `yaml:"description"`
+	Command     string      `yaml:"command"`
+	Tags        []string    `yaml:"tags"`
+	Parameters  []Parameter `yaml:"parameters"`
 }
 
 type Collection struct {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -54,7 +55,7 @@ func InteractiveSearch(searchTerm string) {
 		return
 	}
 
-	//// fzf
+	// Use fuzzyfinder to select a command
 
 	selectedIndex, err := fuzzyfinder.Find(
 		commands,
@@ -87,17 +88,10 @@ func InteractiveSearch(searchTerm string) {
 	survey.AskOne(actionPrompt, &action)
 
 	switch action {
-	case "Copy to clipboard":
-		if err := clipboard.WriteAll(selected.Command); err != nil {
-			fmt.Fprintf(os.Stderr, "Error copying to clipboard: %v\n", err)
-			return
-		}
-		fmt.Println(green("Command copied to clipboard!"))
-
-	case "Show details":
-		fmt.Printf("\n%s\n", formatCommandLong(selected))
-
 	case "Execute command":
+		if len(selected.Parameters) > 0 {
+			selected.Command = interactiveParameters(selected)
+		}
 		fmt.Printf("%s %s\n", yellow("Executing:"), selected.Command)
 
 		// Create shell command
@@ -124,6 +118,93 @@ func InteractiveSearch(searchTerm string) {
 				os.Exit(1)
 			}
 		}
+
+	case "Copy to clipboard":
+		if len(selected.Parameters) > 0 {
+			selected.Command = interactiveParameters(selected)
+		}
+
+		if err := clipboard.WriteAll(selected.Command); err != nil {
+			fmt.Fprintf(os.Stderr, "Error copying to clipboard: %v\n", err)
+			return
+		}
+		fmt.Println(green("Command copied to clipboard!"))
+
+	case "Show details":
+		fmt.Printf("\n%s\n", formatCommandLong(selected))
+	}
+}
+
+func interactiveParameters(cmd store.Command) string {
+	cmdStr := cmd.Command
+
+	for _, param := range cmd.Parameters {
+		defaultValueStr := ""
+		if param.DefaultValue != "" {
+			defaultValueStr = fmt.Sprintf(" (%s)", param.DefaultValue)
+		}
+
+		mandatoryStr := ""
+		if !param.Optional && param.DefaultValue == "" {
+			mandatoryStr = bold("*")
+		}
+		promptStr := fmt.Sprintf("%s%s%s:", param.Name, mandatoryStr, defaultValueStr)
+		prompt := &survey.Input{Message: promptStr}
+
+		var value string
+		var err error
+
+		if !param.Optional && param.DefaultValue == "" {
+			// Required parameter with no default value
+			err = survey.AskOne(prompt, &value, survey.WithValidator(survey.Required))
+		} else {
+			err = survey.AskOne(prompt, &value)
+		}
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
+			os.Exit(1)
+		}
+
+		cmdStr = replaceParameter(cmdStr, param, value)
+	}
+
+	return cmdStr
+}
+
+func replaceParameter(cmdStr string, p store.Parameter, value string) string {
+	if p.Optional {
+		// Handle optional parameter with regex
+		placeholder := fmt.Sprintf("{{%s}}", p.Name)
+		// Match {? ... {{param}} ... ?}
+		re := regexp.MustCompile(`\{\?(?:[^?]|\?(?:[^}]|$))*\{\{` + p.Name + `\}\}(?:[^?]|\?(?:[^}]|$))*\?\}`)
+
+		if value == "" {
+			// If value is empty, remove the entire optional block
+			return re.ReplaceAllString(cmdStr, "")
+		} else {
+			// Replace parameter and remove the {? ?} markers
+			matches := re.FindAllStringSubmatch(cmdStr, -1)
+			result := cmdStr
+
+			for _, match := range matches {
+				if len(match) > 0 {
+					originalText := match[0]
+					newText := strings.Replace(originalText, "{?", "", 1)
+					newText = strings.Replace(newText, "?}", "", 1)
+					newText = strings.Replace(newText, placeholder, value, -1)
+					result = strings.Replace(result, originalText, newText, -1)
+				}
+			}
+
+			return result
+		}
+	} else {
+		if value == "" {
+			value = p.DefaultValue
+		}
+		placeholder := fmt.Sprintf("{{%s}}", p.Name)
+		return strings.Replace(cmdStr, placeholder, value, -1)
 	}
 }
 
@@ -132,18 +213,29 @@ func formatCommandLong(cmd store.Command) string {
 	if len(cmd.Tags) > 0 {
 		tagsText = fmt.Sprintf("\n   [%s]", strings.Join(cmd.Tags, ", "))
 	}
+
 	descriptionText := ""
 	if cmd.Description != "" {
 		descriptionText = fmt.Sprintf("\n   %s", cmd.Description)
 	}
-	return fmt.Sprintf("%s\n   %s %s%s%s\n\n%s\n   %s",
+
+	parametersText := ""
+	if len(cmd.Parameters) > 0 {
+		parametersText = fmt.Sprintf("\n\n%s", bold("Parameters:"))
+		for _, param := range cmd.Parameters {
+			parametersText += fmt.Sprintf("\n   %s: %s", param.Name, param.Description)
+		}
+	}
+
+	return fmt.Sprintf("%s\n   %s %s%s%s\n\n%s\n   %s%s",
 		bold("Description:"),
 		cmd.Collection,
 		yellow(cmd.Name),
 		descriptionText,
 		tagsText,
 		bold("Command:"),
-		cyan(cmd.Command))
+		cyan(cmd.Command),
+		parametersText)
 }
 
 // isWindows determines if the current OS is Windows
