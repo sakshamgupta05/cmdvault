@@ -82,7 +82,7 @@ func InteractiveSearch(searchTerm string) {
 	var action string
 	actionPrompt := &survey.Select{
 		Message: "What would you like to do?",
-		Options: []string{"Copy to clipboard", "Show details", "Execute command"},
+		Options: []string{"Execute command", "Copy to clipboard", "Show details"},
 	}
 	survey.AskOne(actionPrompt, &action)
 
