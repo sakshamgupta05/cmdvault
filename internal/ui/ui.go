@@ -9,6 +9,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
+	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/sakshamgupta05/cmdvault/internal/store"
 )
 
@@ -52,19 +53,27 @@ func InteractiveSearch(searchTerm string) {
 		return
 	}
 
-	// Prepare options
-	options := make([]string, len(commands))
-	for i, cmd := range commands {
-		options[i] = fmt.Sprintf("%s: %s - %s", cmd.Collection, cmd.Name, strings.Join(cmd.Tags, ", "))
-	}
+	//// fzf
 
-	// Prompt for command selection
-	var selectedIndex int
-	prompt := &survey.Select{
-		Message: "Select a command:",
-		Options: options,
+	selectedIndex, err := fuzzyfinder.Find(
+		commands,
+		func(i int) string {
+			tagsText := ""
+			if len(commands[i].Tags) > 0 {
+				tagsText = fmt.Sprintf(" [%s]", strings.Join(commands[i].Tags, ", "))
+			}
+			return fmt.Sprintf("%s: %s%s", commands[i].Collection, commands[i].Name, tagsText)
+		},
+		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+			if i == -1 {
+				return ""
+			}
+			return formatCommandLong(commands[i])
+		}))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error executing command: %v\n", err)
+		return
 	}
-	survey.AskOne(prompt, &selectedIndex)
 
 	selected := commands[selectedIndex]
 
@@ -85,9 +94,7 @@ func InteractiveSearch(searchTerm string) {
 		fmt.Println(green("Command copied to clipboard!"))
 
 	case "Show details":
-		fmt.Println()
-		fmt.Printf("%s %s\n\n", bold("Command:"), cyan(selected.Command))
-		fmt.Printf("%s %s\n", bold("Tags:"), strings.Join(selected.Tags, ", "))
+		fmt.Printf("\n%s\n", formatCommandLong(selected))
 
 	case "Execute command":
 		fmt.Printf("%s %s\n", yellow("Executing:"), selected.Command)
@@ -108,6 +115,20 @@ func InteractiveSearch(searchTerm string) {
 			fmt.Fprintf(os.Stderr, "Error executing command: %v\n", err)
 		}
 	}
+}
+
+func formatCommandLong(cmd store.Command) string {
+	tagsText := ""
+	if len(cmd.Tags) > 0 {
+		tagsText = fmt.Sprintf("\n   [%s]", strings.Join(cmd.Tags, ", "))
+	}
+	return fmt.Sprintf("%s\n   %s %s%s\n\n%s\n   %s",
+		bold("Description:"),
+		cmd.Collection,
+		yellow(cmd.Name),
+		tagsText,
+		bold("Command:"),
+		cyan(cmd.Command))
 }
 
 // isWindows determines if the current OS is Windows
