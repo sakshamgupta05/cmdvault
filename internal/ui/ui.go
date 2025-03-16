@@ -35,11 +35,7 @@ func ListCommands(collection string) {
 	fmt.Printf("%s Commands in collection \"%s\":\n\n", bold("•"), collection)
 
 	for _, cmd := range commands {
-		desc := cmd.Description
-		if desc == "" {
-			desc = "(No description)"
-		}
-		fmt.Printf("%s %s\n   %s\n\n", bold("•"), green(cmd.Name), desc)
+		fmt.Printf("%s %s\n   %s\n\n", bold("•"), green(cmd.Name), strings.Join(cmd.Tags, ", "))
 	}
 }
 
@@ -59,11 +55,7 @@ func InteractiveSearch(searchTerm string) {
 	// Prepare options
 	options := make([]string, len(commands))
 	for i, cmd := range commands {
-		desc := cmd.Description
-		if desc == "" {
-			desc = "(No description)"
-		}
-		options[i] = fmt.Sprintf("%s - %s", cmd.Name, desc)
+		options[i] = fmt.Sprintf("%s - %s", cmd.Name, strings.Join(cmd.Tags, ", "))
 	}
 
 	// Prompt for command selection
@@ -95,7 +87,6 @@ func InteractiveSearch(searchTerm string) {
 	case "Show details":
 		fmt.Println()
 		fmt.Printf("%s %s\n\n", bold("Command:"), cyan(selected.Command))
-		fmt.Printf("%s %s\n\n", bold("Description:"), selected.Description)
 		fmt.Printf("%s %s\n", bold("Tags:"), strings.Join(selected.Tags, ", "))
 
 	case "Execute command":

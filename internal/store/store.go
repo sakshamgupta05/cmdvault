@@ -11,10 +11,9 @@ import (
 
 // Command represents a stored shell command
 type Command struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Command     string   `yaml:"command"`
-	Tags        []string `yaml:"tags"`
+	Name    string   `yaml:"name"`
+	Command string   `yaml:"command"`
+	Tags    []string `yaml:"tags"`
 }
 
 type Collection struct {
@@ -96,8 +95,7 @@ func SearchCommands(searchTerm string) ([]Command, error) {
 	searchTerm = strings.ToLower(searchTerm)
 	var results []Command
 	for _, cmd := range commands {
-		if strings.Contains(strings.ToLower(cmd.Name), searchTerm) ||
-			strings.Contains(strings.ToLower(cmd.Description), searchTerm) {
+		if strings.Contains(strings.ToLower(cmd.Name), searchTerm) {
 			results = append(results, cmd)
 			continue
 		}
