@@ -39,14 +39,15 @@ jobs:
       - name: Rename binary
         run: mv target/${{ matrix.target }}/release/cmdvault ${{ matrix.name }}
 
-      - name: Make binary executable
-        run: chmod +x ${{ matrix.name }}
+      - name: Package binary
+        run: |
+          tar -czf ${{ matrix.name }}.tar.gz ${{ matrix.name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
-          path: ${{ matrix.name }}
+          path: ${{ matrix.name }}.tar.gz
 
   release:
     needs: build
@@ -60,7 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            cmdvault-darwin-amd64/cmdvault-darwin-amd64
-            cmdvault-darwin-arm64/cmdvault-darwin-arm64
-            cmdvault-linux-amd64/cmdvault-linux-amd64
+            cmdvault-darwin-amd64/cmdvault-darwin-amd64.tar.gz
+            cmdvault-darwin-arm64/cmdvault-darwin-arm64.tar.gz
+            cmdvault-linux-amd64/cmdvault-linux-amd64.tar.gz
           generate_release_notes: true

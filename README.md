@@ -36,6 +36,7 @@ Download the latest binary for your platform from the [releases page](https://gi
 **macOS users:** After downloading, you may need to remove the quarantine attribute:
 
 ```bash
+tar -xzf cmdvault-darwin-arm64.tar.gz
 xattr -d com.apple.quarantine ./cmdvault-darwin-arm64
 ./cmdvault-darwin-arm64
 ```
