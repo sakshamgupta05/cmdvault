@@ -33,6 +33,29 @@ cargo install cmdvault
 
 Download the latest binary for your platform from the [releases page](https://github.com/sakshamgupta05/cmdvault/releases).
 
+### Build from source
+
+If you want to build and install from source locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/sakshamgupta05/cmdvault.git
+cd cmdvault
+
+# Build and install with cargo
+cargo install --path .
+```
+
+Or to just build without installing:
+
+```bash
+# Build in release mode
+cargo build --release
+
+# The binary will be in target/release/cmdvault
+./target/release/cmdvault
+```
+
 ## Quick Start
 
 ### 1. Create a collection file
