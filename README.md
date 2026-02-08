@@ -1,183 +1,214 @@
 # CmdVault
 
-## The Problem CmdVault Solves
+A CLI tool to store, search, and execute your frequently used shell commands.
 
-As developers, we constantly find ourselves:
+Stop digging through terminal history or scattered notes. CmdVault lets you save commands with descriptions, tags, and parameters, then find and run them instantly with fuzzy search.
 
-- Scrolling through terminal history to find that command we ran last week
-- Keeping scattered notes with commands across different tools and projects
-- Forgetting the exact flags and options for complex commands
-- Re-creating the same commands with small variations again and again
-- Losing track of useful commands when switching between machines
+## Features
 
-**CmdVault** is your personal command-line Swiss Army knife - a modern, cross-platform CLI tool that helps you store, search, and execute frequently used shell commands with an intuitive interface.
-
-## Key Features
-
-- 🔍 **Fuzzy Search**: Quickly find commands with partial search terms
-- 🧩 **Parameterized Commands**: Store command templates with placeholders for dynamic values
-- 🗂️ **Collections**: Organize commands into different collections (e.g., Docker, Kubernetes, etc.)
-- 📋 **Clipboard Integration**: Copy commands with a single keystroke
-- ⌨️ **TUI Interface**: Beautiful terminal UI powered by Bubble Tea
-- 🔄 **Import/Export**: Share command collections across machines via a GitHub repo
-- 🌍 **Cross-Platform**: Works on macOS, Linux, and Windows
-- 🚀 **Fast**: Written in Go for lightning-fast performance
+- **Fuzzy search** - Find commands by typing any part of the name, collection, or tag
+- **Parameterized commands** - Save command templates with `{{placeholders}}` that prompt you for values
+- **Optional parameters** - Wrap sections in `{? ?}` to include them only when a value is provided
+- **Collections** - Organize commands into YAML files by topic (docker, kubernetes, git, etc.)
+- **Execute or copy** - Run commands directly or copy them to your clipboard
+- **Preview** - See full command details in a side panel while searching
+- **Cross-platform** - Works on macOS and Linux
 
 ## Installation
 
-### Via Homebrew (macOS and Linux)
+### Homebrew (macOS and Linux)
 
 ```bash
-brew tap yourusername/cmdvault
+brew tap sakshamgupta05/tap
 brew install cmdvault
 ```
 
-### Using Go
+### Cargo (Rust)
 
 ```bash
-go install github.com/sakshamgupta05/cmdvault@latest
+cargo install cmdvault
 ```
 
-### Direct Download
+### Binary download
 
 Download the latest binary for your platform from the [releases page](https://github.com/sakshamgupta05/cmdvault/releases).
 
-## Usage
+## Quick Start
 
-### Interactive Search
+### 1. Create a collection file
 
-Simply run `cmdvault` without arguments to open the interactive search interface:
+CmdVault reads commands from YAML files in `~/.config/cmdvault/collections/`. Create your first collection:
+
+```bash
+mkdir -p ~/.config/cmdvault/collections
+```
+
+Create `~/.config/cmdvault/collections/docker.yaml`:
+
+```yaml
+commands:
+  - name: Run container
+    command: docker run --name {{name}} -p {{host_port}}:{{container_port}} {{image}}:{{tag}}
+    description: Run a Docker container with port mapping
+    tags:
+      - docker
+      - run
+    parameters:
+      - name: name
+        description: Container name
+      - name: host_port
+        description: Host port
+      - name: container_port
+        description: Container port
+      - name: image
+        description: Image name
+      - name: tag
+        description: Image tag
+        defaultValue: latest
+
+  - name: Stop all containers
+    command: docker stop $(docker ps -q)
+    description: Stop all running containers
+    tags:
+      - docker
+      - stop
+```
+
+### 2. Search and run
 
 ```bash
 cmdvault
 ```
 
-### Add a New Command
+This opens the fuzzy finder. Type to filter, press Enter to select, then choose to execute, copy, or view details.
+
+## Usage
+
+### Interactive search (default)
 
 ```bash
-cmdvault add
+cmdvault              # browse all commands
+cmdvault search git   # pre-filter by "git"
 ```
 
-### Search for Commands
+### List commands in a collection
 
 ```bash
-cmdvault search docker
+cmdvault list -c docker
 ```
 
-### Manage Collections
+### List all collections
 
 ```bash
-# Create a new collection
-cmdvault create-collection kubernetes
-
-# Set the default collection
-cmdvault set-default kubernetes
-
-# List all collections
 cmdvault collections
 ```
 
-### Import/Export Commands
+## Command YAML Format
+
+Each collection is a YAML file with a `commands` list:
+
+```yaml
+commands:
+  - name: Command name
+    command: the actual shell command
+    description: What this command does # optional
+    tags: # optional
+      - tag1
+      - tag2
+    parameters: # optional
+      - name: param_name
+        description: What this param is
+        optional: false # default: false
+        defaultValue: some_default # optional
+```
+
+### Parameters
+
+Use `{{param_name}}` as placeholders in your command string. When you execute or copy a parameterized command, CmdVault prompts you for each value.
+
+```yaml
+- name: SSH into server
+  command: ssh {{user}}@{{host}} -p {{port}}
+  parameters:
+    - name: user
+      description: Username
+      defaultValue: root
+    - name: host
+      description: Server hostname
+    - name: port
+      description: SSH port
+      defaultValue: 22
+```
+
+### Optional parameters
+
+Wrap sections in `{? ?}` to include them only when a value is provided. If left empty, the entire block is removed from the command.
+
+```yaml
+- name: Helm template
+  command: helm template {{repo}}/{{chart}}{? --version {{version}} ?}{? -f {{values}}.yaml?} > {{output}}.yaml
+  parameters:
+    - name: repo
+      description: Helm repo name
+    - name: chart
+      description: Chart name
+    - name: version
+      description: Chart version
+      optional: true
+    - name: values
+      description: Values file name
+      optional: true
+    - name: output
+      description: Output file name
+```
+
+In this example, if you leave `version` empty, `--version ...` is omitted entirely from the final command.
+
+## Configuration
+
+CmdVault works out of the box with zero configuration. By default, collections are stored in `~/.config/cmdvault/collections/`.
+
+You can optionally create `~/.config/cmdvault/config.yaml` for advanced configuration. The config directory location can be overridden with the `CMDVAULT_CONFIG` environment variable.
+
+## Advanced Configuration
+
+Most users don't need a config file. However, you can create `~/.config/cmdvault/config.yaml` for advanced customization.
+
+### Custom Collection Directories
+
+You can configure CmdVault to load collections from multiple directories. This is useful for:
+
+- **Importing public collections** - Clone community-maintained command repositories and reference them directly
+- **Team collaboration** - Share collections via Git across your team
+- **Organized separation** - Keep personal and work collections separate
+
+Create `~/.config/cmdvault/config.yaml`:
+
+```yaml
+collectionDirs:
+  - ~/.config/cmdvault-awesome-public/collections/
+  - ~/.config/cmdvault/collections/
+```
+
+For example, to use a public collection repository:
 
 ```bash
-# Export all collections to a directory (e.g., to commit to Git)
-cmdvault export ~/github/my-cmdvault
+# Clone a public collection repository
+git clone https://github.com/someone/cmdvault-awesome-commands ~/.config/cmdvault-awesome-public
 
-# Import commands from a directory
-cmdvault import ~/github/my-cmdvault
+# Add it to your config
+cat > ~/.config/cmdvault/config.yaml <<EOF
+collectionDirs:
+  - ~/.config/cmdvault-awesome-public/collections/
+  - ~/.config/cmdvault/collections/
+EOF
 ```
 
-## Parameterized Commands
+#### Collection Name Conflicts
 
-CmdVault supports command templates with dynamic parameters, similar to function arguments.
+Collections are identified by their filename (e.g., `docker.yaml` defines the "docker" collection). If multiple directories contain files with the same name, **the directory listed later in `collectionDirs` takes precedence** and overrides earlier ones.
 
-### Parameter Syntax
-
-- **Mandatory parameters**: `<param_name>`
-- **Optional parameters**: Enclosed in square brackets `[ --flag <param_name>]`
-
-### Example
-
-```
-helm template <repo>/<chart>[ --version <version>][ -f <values>.yaml] > <output>.yaml
-```
-
-In this example:
-- `repo`, `chart`, and `output` are mandatory parameters
-- `version` and `values` are optional parameters
-
-When using this command, CmdVault will:
-1. Prompt you to enter values for each parameter
-2. For optional parameters, if you leave them empty, that entire section is omitted
-3. Generate the final command with your values substituted
-
-### Parameter Input
-
-When executing a parameterized command, CmdVault displays a form to enter values:
-
-<p align="center">
-  <img src="assets/params-demo.png" alt="Parameter Input" width="600" />
-</p>
-
-You can preview the final command before execution with `Ctrl+P`.
-
-## Examples
-
-Here are some examples of how CmdVault can simplify your workflow:
-
-### Kubernetes Context Switching
-
-```
-kubectl config use-context <context>
-```
-
-### Complex Docker Commands
-
-```
-docker run --name <container_name> -p <host_port>:<container_port>[ -v <volume>][ -e <env_var>=<value>] <image>:<tag>
-```
-
-### Git Workflow
-
-```
-git checkout -b <branch_name> && git add . && git commit -m "<commit_message>" && git push -u origin <branch_name>
-```
-
-### AWS CLI Commands
-
-```
-aws ec2 describe-instances --filters "Name=tag:<tag_key>,Values=<tag_value>"[ --region <region>]
-```
-
-## Keyboard Shortcuts
-
-In the interactive search interface:
-
-- **Tab**: Navigate between UI elements
-- **Up/Down**: Navigate through commands
-- **/** or just type: Fuzzy search
-- **c**: Copy command to clipboard
-- **e**: Execute command
-- **v**: View command details
-- **ESC**: Go back or clear search
-- **q**: Quit
-
-When entering parameters:
-
-- **Tab/Shift+Tab**: Navigate between fields
-- **Ctrl+P**: Toggle command preview
-- **Enter**: Execute (when on the last field)
-- **Ctrl+C/q**: Cancel
-
-## Why CmdVault?
-
-Unlike shell history or aliases, CmdVault:
-
-- **Provides context**: Stores descriptions and tags with commands
-- **Organizes**: Group commands into collections
-- **Cross-platform**: Works across different operating systems
-- **Git-ready**: Easy to back up and sync between machines
-- **Parameter support**: Turns static commands into flexible templates
+In the example above, if both directories have a `docker.yaml` file, the one in `~/.config/cmdvault/collections/docker.yaml` will be used (since it's listed last). This allows you to selectively override commands from public collections with your own customizations.
 
 ## Contributing
 
@@ -192,9 +223,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/yourusername">yourusername</a>
-</p>

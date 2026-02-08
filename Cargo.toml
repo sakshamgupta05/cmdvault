@@ -1,0 +1,23 @@
+[package]
+name = "cmdvault"
+version = "0.1.0"
+edition = "2021"
+authors = ["Saksham Gupta"]
+description = "Store, search, and execute your frequently used shell commands"
+repository = "https://github.com/sakshamgupta05/cmdvault"
+license = "MIT"
+readme = "README.md"
+keywords = ["cli", "commands", "shell", "fuzzy-search", "productivity"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+skim = "0.10"
+inquire = "0.7"
+cli-clipboard = "0.4"
+colored = "2"
+regex = "1"
+anyhow = "1"
+dirs = "5"
