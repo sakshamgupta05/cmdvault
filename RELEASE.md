@@ -17,6 +17,8 @@ cargo install --path .
 
 ```bash
 cargo login
+
+# cargo publish --dry-run (to verify first)
 cargo publish
 ```
 

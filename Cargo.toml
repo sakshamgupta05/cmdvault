@@ -1,6 +1,6 @@
 [package]
 name = "cmdvault"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Saksham Gupta"]
 description = "Store, search, and execute your frequently used shell commands"
