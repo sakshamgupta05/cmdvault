@@ -33,6 +33,13 @@ cargo install cmdvault
 
 Download the latest binary for your platform from the [releases page](https://github.com/sakshamgupta05/cmdvault/releases).
 
+**macOS users:** After downloading, you may need to remove the quarantine attribute:
+
+```bash
+xattr -d com.apple.quarantine ./cmdvault-darwin-arm64
+./cmdvault-darwin-arm64
+```
+
 ### Build from source
 
 If you want to build and install from source locally:

@@ -39,6 +39,9 @@ jobs:
       - name: Rename binary
         run: mv target/${{ matrix.target }}/release/cmdvault ${{ matrix.name }}
 
+      - name: Make binary executable
+        run: chmod +x ${{ matrix.name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
