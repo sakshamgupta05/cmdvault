@@ -4,13 +4,12 @@ A CLI tool to store, search, and execute your frequently used shell commands.
 
 Stop digging through terminal history or scattered notes. CmdVault lets you save commands with descriptions, tags, and parameters, then find and run them instantly with fuzzy search.
 
-![CI](https://github.com/sakshamgupta05/cmdvault/actions/workflows/release.yml/badge.svg)
-![Crates.io](https://img.shields.io/crates/v/cmdvault)
-![Downloads](https://img.shields.io/crates/d/cmdvault)
-![License](https://img.shields.io/github/license/sakshamgupta05/cmdvault)
-![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20linux-blue)
-![Arch](https://img.shields.io/badge/arch-arm64%20%7C%20amd64-green)
-![Homebrew](https://img.shields.io/badge/Homebrew-available-orange)
+[![GitHub release](https://img.shields.io/github/v/release/sakshamgupta05/cmdvault?include_prereleases&style=flat)](https://github.com/sakshamgupta05/cmdvault/releases)
+[![Crates.io](https://img.shields.io/crates/v/cmdvault)](https://crates.io/crates/cmdvault)
+[![Homebrew](https://img.shields.io/badge/Homebrew-available-orange)](https://github.com/sakshamgupta05/homebrew-tap)
+[![CI](https://github.com/sakshamgupta05/cmdvault/actions/workflows/release.yml/badge.svg)](https://github.com/sakshamgupta05/cmdvault/releases)
+[![License](https://img.shields.io/github/license/sakshamgupta05/cmdvault)](https://github.com/sakshamgupta05/cmdvault/blob/master/LICENSE)
+<!-- [![Crates.io MTD](https://img.shields.io/crates/d/cmdvault)](https://crates.io/crates/cmdvault) -->
 
 ## Features
 
