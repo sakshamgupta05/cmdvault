@@ -4,6 +4,14 @@ A CLI tool to store, search, and execute your frequently used shell commands.
 
 Stop digging through terminal history or scattered notes. CmdVault lets you save commands with descriptions, tags, and parameters, then find and run them instantly with fuzzy search.
 
+![CI](https://github.com/sakshamgupta05/cmdvault/actions/workflows/release.yml/badge.svg)
+![Crates.io](https://img.shields.io/crates/v/cmdvault)
+![Downloads](https://img.shields.io/crates/d/cmdvault)
+![License](https://img.shields.io/github/license/sakshamgupta05/cmdvault)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20linux-blue)
+![Arch](https://img.shields.io/badge/arch-arm64%20%7C%20amd64-green)
+![Homebrew](https://img.shields.io/badge/Homebrew-available-orange)
+
 ## Features
 
 - **Fuzzy search** - Find commands by typing any part of the name, collection, or tag

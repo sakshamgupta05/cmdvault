@@ -13,15 +13,6 @@ cargo build --release
 cargo install --path .
 ```
 
-## Publishing to crates.io
-
-```bash
-cargo login
-
-# cargo publish --dry-run (to verify first)
-cargo publish
-```
-
 ## GitHub Releases
 
 Pushing a version tag triggers the GitHub Actions workflow which:
@@ -38,3 +29,12 @@ git push origin v0.1.0
 
 After a GitHub release is created, update the Homebrew tap formula at
 `sakshamgupta05/homebrew-tap` with the new version and SHA256 hashes.
+
+## Publishing to crates.io (Done automatically by GitHub Actions on release)
+
+```bash
+cargo login
+
+# cargo publish --dry-run (to verify first)
+cargo publish
+```
